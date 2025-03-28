@@ -6,8 +6,7 @@ import google.generativeai as genai
 import re
 from dotenv import load_dotenv
 import os
- 
-# List of the provided URLs
+
 urls = [
     "https://www.ikea.com",
     "https://www.lvmh.com",
@@ -17,10 +16,9 @@ urls = [
     "https://www.omega.com"
 ]
  
-# Load environment variables from .env file
+
 load_dotenv()
- 
-# Get the API key from the environment variable
+
 API_KEY = os.getenv('API_KEY')
  
 # Function to fetch content using requests
@@ -29,26 +27,26 @@ def fetch_content(url):
    
     try:
         response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()  # Raise an error for bad responses (4xx, 5xx)
+        response.raise_for_status()  
     except requests.RequestException as e:
         print(f"Error fetching {url}: {e}")
         return None, None
  
     soup = BeautifulSoup(response.text, 'html.parser')
-    # Extract JavaScript-based links
+
     js_links = re.findall(r'https?://[^\s"\'<>]+', response.text)
  
     return soup, js_links
  
 # Function to clean the scraped data
 def clean_data(soup):
-    # Remove unwanted elements
+  
     for script in soup(['script', 'style']):
         script.decompose()
  
-    # Preserve links with their text
+   
     for a in soup.find_all('a', href=True):
-        a.insert_after(f" ({a['href']})")  # Append the link next to its text
+        a.insert_after(f" ({a['href']})")  
  
     return soup.get_text(separator=' ', strip=True)
  
@@ -94,7 +92,7 @@ def extract_relevant_links(soup, js_links, base_url):
             full_link = href if href.startswith("http") else base_url + href
             links.append(full_link)
  
-    # Search for relevant links in JavaScript-extracted URLs
+  
     for link in js_links:
         if any(keyword in link.lower() for keyword in keywords):
             links.append(link)
@@ -134,7 +132,7 @@ def save_to_csv(data, filename="company_results.csv"):
 def process_urls(urls):
     all_extracted_data = []
     for url in urls:
-        print(f"Scraping {url}...")  # Print scraping status
+        print(f"Scraping {url}...")  
         extracted_info = get_complete_information(url)
         all_extracted_data.append({"URL": url, "Extracted Info": extracted_info})
         time.sleep(2)
